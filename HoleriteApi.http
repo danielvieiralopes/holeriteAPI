@@ -1,0 +1,6 @@
+@HoleriteApi_HostAddress = http://localhost:5258
+
+GET {{HoleriteApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
