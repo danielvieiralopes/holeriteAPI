@@ -9,6 +9,7 @@
 /media/daniel/HD 2TB/BACKUP PC/Users/Daniel/source/repos/HoleriteApi/bin/Debug/net9.0/Azure.Core.dll
 /media/daniel/HD 2TB/BACKUP PC/Users/Daniel/source/repos/HoleriteApi/bin/Debug/net9.0/Azure.Identity.dll
 /media/daniel/HD 2TB/BACKUP PC/Users/Daniel/source/repos/HoleriteApi/bin/Debug/net9.0/BouncyCastle.Cryptography.dll
+/media/daniel/HD 2TB/BACKUP PC/Users/Daniel/source/repos/HoleriteApi/bin/Debug/net9.0/Castle.Core.dll
 /media/daniel/HD 2TB/BACKUP PC/Users/Daniel/source/repos/HoleriteApi/bin/Debug/net9.0/Humanizer.dll
 /media/daniel/HD 2TB/BACKUP PC/Users/Daniel/source/repos/HoleriteApi/bin/Debug/net9.0/itext.barcodes.dll
 /media/daniel/HD 2TB/BACKUP PC/Users/Daniel/source/repos/HoleriteApi/bin/Debug/net9.0/itext.bouncy-castle-connector.dll
@@ -36,6 +37,7 @@
 /media/daniel/HD 2TB/BACKUP PC/Users/Daniel/source/repos/HoleriteApi/bin/Debug/net9.0/Microsoft.EntityFrameworkCore.dll
 /media/daniel/HD 2TB/BACKUP PC/Users/Daniel/source/repos/HoleriteApi/bin/Debug/net9.0/Microsoft.EntityFrameworkCore.Abstractions.dll
 /media/daniel/HD 2TB/BACKUP PC/Users/Daniel/source/repos/HoleriteApi/bin/Debug/net9.0/Microsoft.EntityFrameworkCore.Design.dll
+/media/daniel/HD 2TB/BACKUP PC/Users/Daniel/source/repos/HoleriteApi/bin/Debug/net9.0/Microsoft.EntityFrameworkCore.Proxies.dll
 /media/daniel/HD 2TB/BACKUP PC/Users/Daniel/source/repos/HoleriteApi/bin/Debug/net9.0/Microsoft.EntityFrameworkCore.Relational.dll
 /media/daniel/HD 2TB/BACKUP PC/Users/Daniel/source/repos/HoleriteApi/bin/Debug/net9.0/Microsoft.EntityFrameworkCore.SqlServer.dll
 /media/daniel/HD 2TB/BACKUP PC/Users/Daniel/source/repos/HoleriteApi/bin/Debug/net9.0/Microsoft.Extensions.DependencyModel.dll
@@ -176,5 +178,3 @@
 /media/daniel/HD 2TB/BACKUP PC/Users/Daniel/source/repos/HoleriteApi/obj/Debug/net9.0/HoleriteApi.pdb
 /media/daniel/HD 2TB/BACKUP PC/Users/Daniel/source/repos/HoleriteApi/obj/Debug/net9.0/HoleriteApi.genruntimeconfig.cache
 /media/daniel/HD 2TB/BACKUP PC/Users/Daniel/source/repos/HoleriteApi/obj/Debug/net9.0/ref/HoleriteApi.dll
-/media/daniel/HD 2TB/BACKUP PC/Users/Daniel/source/repos/HoleriteApi/bin/Debug/net9.0/Castle.Core.dll
-/media/daniel/HD 2TB/BACKUP PC/Users/Daniel/source/repos/HoleriteApi/bin/Debug/net9.0/Microsoft.EntityFrameworkCore.Proxies.dll

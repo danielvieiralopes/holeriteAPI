@@ -1,5 +1,7 @@
 using System.Text.RegularExpressions;
+using HoleriteApi.Controllers.Requests;
 using HoleriteApi.Data;
+using HoleriteApi.Models.Enum;
 using Microsoft.EntityFrameworkCore;
 using iText.Kernel.Pdf;
 using iText.Kernel.Utils;
@@ -17,7 +19,7 @@ namespace HoleriteApi.Services
             _context = context;
         }
 
-        public async Task<bool> SalvarHoleriteAsync(IFormFile arquivoPdf)
+        public async Task<bool> SalvarHoleriteAsync(UploadHoleriteRequest request)
         {
             try
             {
@@ -28,7 +30,7 @@ namespace HoleriteApi.Services
                 
                 
 
-                using var pdfTexto = PdfPigUgly.PdfDocument.Open(arquivoPdf.OpenReadStream());
+                using var pdfTexto = PdfPigUgly.PdfDocument.Open(request.ArquivoPdf.OpenReadStream());
                 for (int i = 0; i < pdfTexto.NumberOfPages; i++)
                 {
                     var textoPagina = pdfTexto.GetPage(i + 1).Text;
@@ -40,7 +42,7 @@ namespace HoleriteApi.Services
                     mapa[nomeFuncionario].Add(i);
                 }
 
-                using var pdfOriginal = new PdfDocument(new PdfReader(arquivoPdf.OpenReadStream()));
+                using var pdfOriginal = new PdfDocument(new PdfReader(request.ArquivoPdf.OpenReadStream()));
 
                 foreach (var item in mapa)
                 {
@@ -64,7 +66,7 @@ namespace HoleriteApi.Services
 
                 Console.WriteLine("\nPDFs separados por funcionário com sucesso.");
 
-                ArmazenarHoleritesNoBancoDeDados(mapa, pastaSaida, pdfOriginal);
+                ArmazenarHoleritesNoBancoDeDados(mapa, pastaSaida, pdfOriginal, request.MesReferencia, request.AnoReferencia, request.TipoHolerite);
                 return true;
             }
             catch (Exception e)
@@ -75,7 +77,7 @@ namespace HoleriteApi.Services
             
         }
         
-        private  void ArmazenarHoleritesNoBancoDeDados(Dictionary<string, List<int>> mapa, string pastaSaida, PdfDocument pdfOriginal)
+        private  void ArmazenarHoleritesNoBancoDeDados(Dictionary<string, List<int>> mapa, string pastaSaida, PdfDocument pdfOriginal, int mesReferencia, int anoReferencia, ETipoHolerite tipoHolerite)
     {
         
         foreach (var item in mapa)
@@ -108,12 +110,25 @@ namespace HoleriteApi.Services
                 continue;
             }
             
+            var holeriteExistente = _context.Holerites
+                .FirstOrDefault(h => h.FuncionarioId == funcionario.Id && h.MesReferencia == mesReferencia && h.AnoReferencia == anoReferencia && tipoHolerite == h.TipoHolerite);
+
+            if (holeriteExistente != null)
+            {
+                continue;
+            }
+
             var holerite = new Holerite
             {
                 FuncionarioId = funcionario.Id,
                 NomeFuncionarioExtraido = nomeArquivo,
+                MesReferencia = mesReferencia,
+                AnoReferencia = anoReferencia,
+                TipoHolerite = tipoHolerite,
+                DataUpload = DateTime.Now,
                 ArquivoPdf = arquivoBytes
             };
+            
             _context.Holerites.Add(holerite);
             _context.SaveChanges();
 
@@ -134,15 +149,20 @@ namespace HoleriteApi.Services
         return nome;
     }
 
-        public async Task<List<Holerite>> ConsultarHoleritesAsync(string cpf, DateTime dataNascimento)
+        public async Task<List<Holerite>> ConsultarHoleritesAsync(ConsultaHoleriteRequest request)
         {
             var funcionario = await _context.Funcionarios
                 .Include(f => f.Holerites)
-                .FirstOrDefaultAsync(f => f.Cpf == cpf && f.DataNascimento == dataNascimento);
+                .FirstOrDefaultAsync(f => f.Cpf == request.Cpf && f.DataNascimento == request.DataNascimento);
 
-            return funcionario?.Holerites.ToList() ?? new List<Holerite>();
+            if (funcionario == null)
+                return new List<Holerite>();
+
+            return funcionario.Holerites
+                .Where(h => h.TipoHolerite == request.TipoHolerite && h.MesReferencia == request.MesReferencia && h.AnoReferencia == request.AnoReferencia)
+                .ToList();
         }
-        
+
         public async Task<List<Holerite>> ObterTodosHoleritesAsync()
         {
             return await _context.Holerites.ToListAsync();
