@@ -24,6 +24,7 @@
 /media/daniel/HD 2TB/BACKUP PC/Users/Daniel/source/repos/HoleriteApi/bin/Debug/net9.0/itext.svg.dll
 /media/daniel/HD 2TB/BACKUP PC/Users/Daniel/source/repos/HoleriteApi/bin/Debug/net9.0/itext.bouncy-castle-adapter.dll
 /media/daniel/HD 2TB/BACKUP PC/Users/Daniel/source/repos/HoleriteApi/bin/Debug/net9.0/itext.commons.dll
+/media/daniel/HD 2TB/BACKUP PC/Users/Daniel/source/repos/HoleriteApi/bin/Debug/net9.0/Microsoft.AspNetCore.Authentication.JwtBearer.dll
 /media/daniel/HD 2TB/BACKUP PC/Users/Daniel/source/repos/HoleriteApi/bin/Debug/net9.0/Microsoft.Bcl.AsyncInterfaces.dll
 /media/daniel/HD 2TB/BACKUP PC/Users/Daniel/source/repos/HoleriteApi/bin/Debug/net9.0/Microsoft.Build.Locator.dll
 /media/daniel/HD 2TB/BACKUP PC/Users/Daniel/source/repos/HoleriteApi/bin/Debug/net9.0/Microsoft.CodeAnalysis.dll

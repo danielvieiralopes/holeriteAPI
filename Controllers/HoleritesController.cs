@@ -1,6 +1,7 @@
 using HoleriteApi.Controllers.Requests;
 using HoleriteApi.Models.Enum;
 using HoleriteApi.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HoleriteApi.Controllers;
@@ -47,6 +48,7 @@ public class HoleritesController : ControllerBase
     ///     "message": "Arquivo PDF não enviado."
     /// }
     /// </remarks>
+    [Authorize]
     [HttpPost("upload")]
     [Consumes("multipart/form-data")]
     public async Task<IActionResult> UploadHolerite([FromForm] UploadHoleriteRequest request)
@@ -98,6 +100,7 @@ public class HoleritesController : ControllerBase
     ///     "message": "Nenhum holerite encontrado."
     /// }
     /// </remarks>
+    [Authorize]
     [HttpGet("consulta")]
     public async Task<IActionResult> ConsultarHolerites([FromBody]ConsultaHoleriteRequest request)
     {
@@ -151,6 +154,7 @@ public class HoleritesController : ControllerBase
     ///     "message": "Nenhum holerite encontrado."
     /// }
     /// </remarks>
+    [Authorize]
     [HttpGet("todos")]
     public async Task<IActionResult> ObterTodosHolerites()
     {

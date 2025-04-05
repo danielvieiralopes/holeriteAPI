@@ -1,7 +1,10 @@
 using HoleriteApi.Controllers.Requests;
 using HoleriteApi.Data;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+
+namespace HoleriteApi.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
@@ -14,6 +17,7 @@ public class FuncionariosController : ControllerBase
         _context = context;
     }
 
+    [Authorize]
     [HttpPost]
     public async Task<IActionResult> CadastrarFuncionario([FromBody] FuncionarioRequest funcionario)
     {
@@ -38,7 +42,7 @@ public class FuncionariosController : ControllerBase
         return Ok(f);
     }
     
- 
+    [Authorize]
     [HttpPost("cadastrar-lista")]
     public async Task<IActionResult> CadastrarListaFuncionarios([FromBody] List<FuncionarioRequest> funcionarios)
     {
@@ -70,7 +74,7 @@ public class FuncionariosController : ControllerBase
         return Ok(funcionariosCadastrados);
     }
     
-    
+    [Authorize]
     [HttpGet]
     public async Task<IActionResult> ListarFuncionarios()
     {
@@ -88,7 +92,7 @@ public class FuncionariosController : ControllerBase
         }
         return Ok(funcionario);
     }
-    
+    [Authorize]
     [HttpPut("{id}")]
     public async Task<IActionResult> AtualizarFuncionario(int id, [FromBody] FuncionarioRequest funcionario)
     {
@@ -106,7 +110,7 @@ public class FuncionariosController : ControllerBase
         await _context.SaveChangesAsync();
         return Ok(funcionarioExistente);
     }
-    
+    [Authorize]
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeletarFuncionario(int id)
     {
@@ -120,7 +124,7 @@ public class FuncionariosController : ControllerBase
         await _context.SaveChangesAsync();
         return NoContent();
     }
-    
+    [Authorize]
     [HttpGet("cpf/{cpf}")]
     public async Task<IActionResult> ObterFuncionarioPorCpf(string cpf)
     {
@@ -132,7 +136,7 @@ public class FuncionariosController : ControllerBase
         }
         return Ok(funcionario);
     }
-    
+    [Authorize]
     [HttpGet("nome/{nome}")]
     public async Task<IActionResult> ObterFuncionarioPorNome(string nome)
     {

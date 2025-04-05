@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("HoleriteApi")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+82e629a1144c8f2dfb5e97ec14cfcb3fa8ca7a00")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+1f3eedd7a445d75e629a6b05ec73c8844eea5920")]
 [assembly: System.Reflection.AssemblyProductAttribute("HoleriteApi")]
 [assembly: System.Reflection.AssemblyTitleAttribute("HoleriteApi")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
