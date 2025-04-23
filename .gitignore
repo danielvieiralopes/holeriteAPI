@@ -1,1 +1,7 @@
 PdfsSeparados/
+.idea/
+.vs/
+bin/
+obj/
+*.csproj.user
+*.csproj
