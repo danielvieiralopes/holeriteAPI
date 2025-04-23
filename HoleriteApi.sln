@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.13.35931.197 d17.13
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HoleriteApi", "HoleriteApi.csproj", "{950F87CC-589E-806C-5573-9849492A800D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{950F87CC-589E-806C-5573-9849492A800D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{950F87CC-589E-806C-5573-9849492A800D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{950F87CC-589E-806C-5573-9849492A800D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{950F87CC-589E-806C-5573-9849492A800D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {5E3AC565-99FD-43AC-8F87-B0DAB12FE668}
+	EndGlobalSection
+EndGlobal
