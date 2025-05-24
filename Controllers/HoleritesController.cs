@@ -101,8 +101,8 @@ public class HoleritesController : ControllerBase
     /// }
     /// </remarks>
     [Authorize]
-    [HttpGet("consulta")]
-    public async Task<IActionResult> ConsultarHolerites([FromBody]ConsultaHoleriteRequest request)
+    [HttpPost("consulta")]
+    public async Task<IActionResult> ConsultarHolerites([FromBody] ConsultaHoleriteRequest request)
     {
         var holerites = await _holeriteService.ConsultarHoleritesAsync(request);
 
