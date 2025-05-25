@@ -153,7 +153,7 @@ namespace HoleriteApi.Services
         {
             var funcionario = await _context.Funcionarios
                 .Include(f => f.Holerites)
-                .FirstOrDefaultAsync(f => f.Cpf == request.Cpf && f.DataNascimento.Date == request.DataNascimento.Date);
+                .FirstOrDefaultAsync(f => f.Cpf == request.Cpf);
 
             if (funcionario == null)
                 return new List<Holerite>();
