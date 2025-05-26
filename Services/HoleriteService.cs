@@ -101,7 +101,7 @@ namespace HoleriteApi.Services
             var arquivoBytes = File.ReadAllBytes(caminhoSaida);
 
            
-            var funcionario = _context.Funcionarios.FirstOrDefault(f => f.Nome == nomeFuncionario); 
+            var funcionario = _context.Usuarios.FirstOrDefault(f => f.UserName == nomeFuncionario); 
            
             if (funcionario == null)
             {
@@ -110,7 +110,7 @@ namespace HoleriteApi.Services
             }
             
             var holeriteExistente = _context.Holerites
-                .FirstOrDefault(h => h.FuncionarioId == funcionario.Id && h.MesReferencia == mesReferencia && h.AnoReferencia == anoReferencia && tipoHolerite == h.TipoHolerite);
+                .FirstOrDefault(h => h.UsuarioId == funcionario.Id && h.MesReferencia == mesReferencia && h.AnoReferencia == anoReferencia && tipoHolerite == h.TipoHolerite);
 
             if (holeriteExistente != null)
             {
@@ -119,7 +119,7 @@ namespace HoleriteApi.Services
 
             var holerite = new Holerite
             {
-                FuncionarioId = funcionario.Id,
+                UsuarioId = funcionario.Id,
                 NomeFuncionarioExtraido = nomeArquivo,
                 MesReferencia = mesReferencia,
                 AnoReferencia = anoReferencia,
@@ -150,7 +150,7 @@ namespace HoleriteApi.Services
 
         public async Task<List<Holerite>> ConsultarHoleritesAsync(ConsultaHoleriteRequest request)
         {
-            var funcionario = await _context.Funcionarios
+            var funcionario = await _context.Usuarios
                 .Include(f => f.Holerites)
                 .FirstOrDefaultAsync(f => f.Cpf == request.Cpf);
 

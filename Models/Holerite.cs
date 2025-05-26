@@ -1,3 +1,4 @@
+using HoleriteApi.Models;
 using HoleriteApi.Models.Enum;
 
 public class Holerite
@@ -10,6 +11,6 @@ public class Holerite
     public ETipoHolerite TipoHolerite { get; set; }
     public byte[] ArquivoPdf { get; set; }
 
-    public int? FuncionarioId { get; set; }
-    public Funcionario Funcionario { get; set; }
+    public string UsuarioId { get; set; }
+    public ApplicationUser Usuario { get; set; }
 }

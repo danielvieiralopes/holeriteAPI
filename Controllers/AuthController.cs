@@ -46,8 +46,7 @@ public class AuthController : ControllerBase
     /// {
     ///   "cpf": "12345678900",
     ///   "senha": "SenhaForte@123",
-    ///   "email": "usuario@email.com",
-    ///   "role": "Funcionario"
+    ///   "role": 1 // 1 para Admin, 2 para Funcionario
     /// }
     /// 
     /// Exemplo de response (sucesso):
@@ -61,12 +60,12 @@ public class AuthController : ControllerBase
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterRequest request)
     {
-        var user = new ApplicationUser { UserName = request.Cpf, Email = request.Email };
+        var user = new ApplicationUser { Cpf = request.Cpf, UserName = request.Cpf};
         var result = await _userManager.CreateAsync(user, request.Senha);
 
         if (!result.Succeeded) return BadRequest(result.Errors);
 
-        await _userManager.AddToRoleAsync(user, request.Role);
+        await _userManager.AddToRoleAsync(user, request.Role.ToString());
 
         return Ok("Usuário criado com sucesso.");
     }
@@ -140,7 +139,6 @@ public class AuthController : ControllerBase
     /// POST /api/auth/change-password
     /// Content-Type: application/json
     /// {
-    ///   "cpf": "12345678900",
     ///   "senhaAtual": "SenhaAntiga@123",
     ///   "novaSenha": "SenhaNova@123"
     /// }
@@ -157,9 +155,10 @@ public class AuthController : ControllerBase
     [HttpPost("change-password")]
     public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request)
     {
-        var cpfLogado = User.Identity?.Name;
-        if (cpfLogado == null || cpfLogado != request.Cpf)
-            return Unauthorized("Você não pode alterar a senha de outro usuário.");
+        var cpfLogado = User.FindFirstValue(ClaimTypes.Name);
+
+        if (string.IsNullOrEmpty(cpfLogado))
+            return Unauthorized("Não foi possível identificar o usuário autenticado.");
 
         var user = await _userManager.FindByNameAsync(cpfLogado);
         if (user == null)
@@ -171,6 +170,7 @@ public class AuthController : ControllerBase
 
         return Ok("Senha alterada com sucesso.");
     }
+
 
     /// <summary>
     /// Solicita redefinição de senha para o usuário informado.

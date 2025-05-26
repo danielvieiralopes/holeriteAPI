@@ -1,5 +1,6 @@
 using System.Text;
 using HoleriteApi.Data;
+using HoleriteApi.Models;
 using HoleriteApi.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -28,7 +29,7 @@ builder.Services.AddDbContext<HoleriteDbContext>(options =>
 );
 
 // Configuração do Identity
-builder.Services.AddIdentity<IdentityUser, IdentityRole>()
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddEntityFrameworkStores<HoleriteDbContext>()
     .AddDefaultTokenProviders();
 
@@ -106,7 +107,7 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-    await IdentitySeeder.SeedRolesAsync(roleManager);
+    await IdentitySeeder.SeedDefaultRolesAsync(roleManager);
 }
 
 // Ativa Swagger em ambiente de desenvolvimento

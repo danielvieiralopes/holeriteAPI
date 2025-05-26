@@ -13,17 +13,19 @@ namespace HoleriteApi.Data
         
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Funcionario>()
+            base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<ApplicationUser>()
                 .HasIndex(f => f.Cpf)
                 .IsUnique(); 
 
-            modelBuilder.Entity<Funcionario>()
+            modelBuilder.Entity<ApplicationUser>()
                 .HasMany(f => f.Holerites)
-                .WithOne(h => h.Funcionario)
-                .HasForeignKey(h => h.FuncionarioId);
+                .WithOne(h => h.Usuario)
+                .HasForeignKey(h => h.UsuarioId);
         }
         
-        public DbSet<Funcionario> Funcionarios { get; set; }
+        public DbSet<ApplicationUser> Usuarios { get; set; }
         public DbSet<Holerite> Holerites { get; set; }
 
     }

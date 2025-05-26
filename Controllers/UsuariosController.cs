@@ -1,4 +1,5 @@
 ﻿using HoleriteApi.Models;
+using HoleriteApi.Models.Enum;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -23,14 +24,7 @@ public class UsuariosController : ControllerBase
         var users = _userManager.Users.Select(u => new {
             u.Id,
             u.UserName,
-            u.Email,
-            u.Nome,
-            u.Cpf,
-            u.Cargo,
-            u.Empresa,
-            u.Departamento,
-            u.DataAdmissao,
-            u.DataDemissao
+            u.Cpf
         }).ToList();
 
         return Ok(users);
@@ -44,16 +38,9 @@ public class UsuariosController : ControllerBase
 
         return Ok(new
         {
-            user.Id,
+            user.Id,            
             user.UserName,
-            user.Email,
-            user.Nome,
-            user.Cpf,
-            user.Cargo,
-            user.Empresa,
-            user.Departamento,
-            user.DataAdmissao,
-            user.DataDemissao
+            user.Cpf           
         });
     }
 
@@ -64,13 +51,9 @@ public class UsuariosController : ControllerBase
         if (user == null) return NotFound();
 
         // Atualiza campos
-        user.Nome = updated.Nome;
-        user.Email = updated.Email;
-        user.Cargo = updated.Cargo;
-        user.Departamento = updated.Departamento;
-        user.Empresa = updated.Empresa;
-        user.DataAdmissao = updated.DataAdmissao;
-        user.DataDemissao = updated.DataDemissao;
+        user.UserName = updated.UserName;
+        user.Cpf = updated.Cpf;
+        user.TipoUsuario = updated.TipoUsuario;
 
         var result = await _userManager.UpdateAsync(user);
         if (!result.Succeeded) return BadRequest(result.Errors);
@@ -91,7 +74,7 @@ public class UsuariosController : ControllerBase
     }
 
     [HttpPost("{id}/role")]
-    public async Task<IActionResult> ChangeRole(string id, [FromBody] string newRole)
+    public async Task<IActionResult> ChangeRole(string id, [FromBody] ERoles newRole)
     {
         var user = await _userManager.FindByIdAsync(id);
         if (user == null) return NotFound();
@@ -99,7 +82,7 @@ public class UsuariosController : ControllerBase
         var currentRoles = await _userManager.GetRolesAsync(user);
         await _userManager.RemoveFromRolesAsync(user, currentRoles);
 
-        var result = await _userManager.AddToRoleAsync(user, newRole);
+        var result = await _userManager.AddToRoleAsync(user, newRole.ToString());
         if (!result.Succeeded) return BadRequest(result.Errors);
 
         return Ok("Role alterada com sucesso.");

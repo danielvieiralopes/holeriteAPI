@@ -48,7 +48,7 @@ public class HoleritesController : ControllerBase
     ///     "message": "Arquivo PDF não enviado."
     /// }
     /// </remarks>
-    [Authorize]
+    [Authorize(Roles = "Admin")]
     [HttpPost("upload")]
     [Consumes("multipart/form-data")]
     public async Task<IActionResult> UploadHolerite([FromForm] UploadHoleriteRequest request)
@@ -153,7 +153,7 @@ public class HoleritesController : ControllerBase
     ///     "message": "Holerite não encontrado."
     /// }
     /// </remarks>
-    [Authorize]
+    [Authorize(Roles = "Admin")]
     [HttpPut("{id}")]
     [Consumes("multipart/form-data")]
     public async Task<IActionResult> AtualizarHolerite(int id, [FromForm] UploadHoleriteRequest request)
@@ -204,7 +204,7 @@ public class HoleritesController : ControllerBase
     ///     "message": "Holerite não encontrado."
     /// }
     /// </remarks>
-    [Authorize]
+    [Authorize(Roles = "Admin")]
     [HttpDelete("{id}")]
     public async Task<IActionResult> ExcluirHolerite(int id)
     {
