@@ -33,6 +33,31 @@ public class AuthController : ControllerBase
         _config = config;
     }
 
+    /// <summary>
+    /// Registra um novo usuário no sistema.
+    /// </summary>
+    /// <param name="request">Dados para registro do usuário.</param>
+    /// <returns>Mensagem de sucesso ou erros de validação.</returns>
+    /// <remarks>
+    /// Exemplo de request:
+    /// 
+    /// POST /api/auth/register
+    /// Content-Type: application/json
+    /// {
+    ///   "cpf": "12345678900",
+    ///   "senha": "SenhaForte@123",
+    ///   "email": "usuario@email.com",
+    ///   "role": "Funcionario"
+    /// }
+    /// 
+    /// Exemplo de response (sucesso):
+    /// "Usuário criado com sucesso."
+    /// 
+    /// Exemplo de response (erro):
+    /// [
+    ///   { "code": "DuplicateUserName", "description": "Username '12345678900' is already taken." }
+    /// ]
+    /// </remarks>
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterRequest request)
     {
@@ -41,11 +66,34 @@ public class AuthController : ControllerBase
 
         if (!result.Succeeded) return BadRequest(result.Errors);
 
-        await _userManager.AddToRoleAsync(user, request.Role); // "Admin" ou "Funcionario"
+        await _userManager.AddToRoleAsync(user, request.Role);
 
         return Ok("Usuário criado com sucesso.");
     }
 
+    /// <summary>
+    /// Realiza o login do usuário e retorna um token JWT.
+    /// </summary>
+    /// <param name="request">Dados de login (CPF e senha).</param>
+    /// <returns>Token JWT ou mensagem de erro.</returns>
+    /// <remarks>
+    /// Exemplo de request:
+    /// 
+    /// POST /api/auth/login
+    /// Content-Type: application/json
+    /// {
+    ///   "cpf": "12345678900",
+    ///   "senha": "SenhaForte@123"
+    /// }
+    /// 
+    /// Exemplo de response (sucesso):
+    /// {
+    ///   "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+    /// }
+    /// 
+    /// Exemplo de response (erro):
+    /// "Usuário inválido."
+    /// </remarks>
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
@@ -81,6 +129,30 @@ public class AuthController : ControllerBase
         return Ok(new { Token = tokenHandler.WriteToken(token) });
     }
 
+    /// <summary>
+    /// Altera a senha do usuário autenticado.
+    /// </summary>
+    /// <param name="request">Dados para alteração de senha.</param>
+    /// <returns>Mensagem de sucesso ou erro.</returns>
+    /// <remarks>
+    /// Exemplo de request:
+    /// 
+    /// POST /api/auth/change-password
+    /// Content-Type: application/json
+    /// {
+    ///   "cpf": "12345678900",
+    ///   "senhaAtual": "SenhaAntiga@123",
+    ///   "novaSenha": "SenhaNova@123"
+    /// }
+    /// 
+    /// Exemplo de response (sucesso):
+    /// "Senha alterada com sucesso."
+    /// 
+    /// Exemplo de response (erro):
+    /// [
+    ///   { "code": "PasswordMismatch", "description": "Incorrect password." }
+    /// ]
+    /// </remarks>
     [Authorize]
     [HttpPost("change-password")]
     public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request)
@@ -100,6 +172,28 @@ public class AuthController : ControllerBase
         return Ok("Senha alterada com sucesso.");
     }
 
+    /// <summary>
+    /// Solicita redefinição de senha para o usuário informado.
+    /// </summary>
+    /// <param name="request">Dados para solicitação de redefinição de senha.</param>
+    /// <returns>Token de redefinição ou mensagem de erro.</returns>
+    /// <remarks>
+    /// Exemplo de request:
+    /// 
+    /// POST /api/auth/forgot-password
+    /// Content-Type: application/json
+    /// {
+    ///   "cpf": "12345678900"
+    /// }
+    /// 
+    /// Exemplo de response (sucesso):
+    /// {
+    ///   "token": "código_do_token"
+    /// }
+    /// 
+    /// Exemplo de response (erro):
+    /// "Usuário não encontrado."
+    /// </remarks>
     [HttpPost("forgot-password")]
     public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest request)
     {
@@ -113,6 +207,30 @@ public class AuthController : ControllerBase
         return Ok(new { Token = token });
     }
 
+    /// <summary>
+    /// Redefine a senha do usuário utilizando o token de redefinição.
+    /// </summary>
+    /// <param name="request">Dados para redefinição de senha.</param>
+    /// <returns>Mensagem de sucesso ou erro.</returns>
+    /// <remarks>
+    /// Exemplo de request:
+    /// 
+    /// POST /api/auth/reset-password
+    /// Content-Type: application/json
+    /// {
+    ///   "cpf": "12345678900",
+    ///   "token": "código_do_token",
+    ///   "novaSenha": "SenhaNova@123"
+    /// }
+    /// 
+    /// Exemplo de response (sucesso):
+    /// "Senha redefinida com sucesso."
+    /// 
+    /// Exemplo de response (erro):
+    /// [
+    ///   { "code": "InvalidToken", "description": "Invalid token." }
+    /// ]
+    /// </remarks>
     [HttpPost("reset-password")]
     public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
     {
@@ -126,5 +244,4 @@ public class AuthController : ControllerBase
 
         return Ok("Senha redefinida com sucesso.");
     }
-
 }
