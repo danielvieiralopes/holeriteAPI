@@ -2,12 +2,14 @@ using System.Text;
 using HoleriteApi.Data;
 using HoleriteApi.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Carrega configurações dos arquivos de ambiente e secrets
 builder.Configuration
     .SetBasePath(Directory.GetCurrentDirectory())
     .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
@@ -15,22 +17,61 @@ builder.Configuration
     .AddUserSecrets<Program>()
     .AddEnvironmentVariables();
 
+// Recupera configurações do JWT
 var key = builder.Configuration["Jwt:Key"];
 var issuer = builder.Configuration["Jwt:Issuer"];
-var audience = builder.Configuration["Jwt:Audience"]; 
+var audience = builder.Configuration["Jwt:Audience"];
 
-
+// Configuração do EF Core com SQL Server
 builder.Services.AddDbContext<HoleriteDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
 );
 
-builder.Services.AddControllers();
+// Configuração do Identity
+builder.Services.AddIdentity<IdentityUser, IdentityRole>()
+    .AddEntityFrameworkStores<HoleriteDbContext>()
+    .AddDefaultTokenProviders();
+
+// Configuração do JWT Bearer
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = issuer,
+        ValidAudience = audience,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key))
+    };
+});
+
+// Injeção de dependências
+builder.Services.AddScoped<HoleriteService>();
+
+// CORS para permitir chamadas do Angular local
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend",
+        policy => policy
+            .WithOrigins("http://localhost:4200")
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+    );
+});
+
+// Configuração do Swagger com autenticação JWT
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "Holerite API", Version = "v1" });
 
-    // Adiciona o esquema de segurança
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Name = "Authorization",
@@ -41,7 +82,6 @@ builder.Services.AddSwaggerGen(c =>
         Description = "Insira o token JWT assim: Bearer {seu_token}"
     });
 
-    // Aplica o esquema de segurança globalmente
     c.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {
@@ -58,48 +98,26 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-builder.Services.AddScoped<HoleriteService>();
-
-builder.Services.AddAuthentication(options =>
-    {
-        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-    })
-    .AddJwtBearer(options =>
-    {
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-            ValidIssuer = issuer,
-            ValidAudience = audience,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key))
-        };
-    });
-
-// Adiciona política de CORS
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowFrontend",
-        policy => policy
-            .WithOrigins("http://localhost:4200") 
-            .AllowAnyHeader()
-            .AllowAnyMethod()
-    );
-});
+builder.Services.AddControllers();
 
 var app = builder.Build();
 
+// Executa o seed das roles ao iniciar
+using (var scope = app.Services.CreateScope())
+{
+    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+    await IdentitySeeder.SeedRolesAsync(roleManager);
+}
+
+// Ativa Swagger em ambiente de desenvolvimento
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
+// Middlewares
 app.UseCors("AllowFrontend");
-
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

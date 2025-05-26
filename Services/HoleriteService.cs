@@ -7,7 +7,6 @@ using iText.Kernel.Pdf;
 using iText.Kernel.Utils;
 using PdfPigUgly = UglyToad.PdfPig;
 
-
 namespace HoleriteApi.Services
 {
     public class HoleriteService
@@ -171,6 +170,46 @@ namespace HoleriteApi.Services
         public async Task<Holerite?> ObterHoleritePorIdAsync(int id)
         {
             return await _context.Holerites.FindAsync(id);
+        }
+
+
+        public async Task<bool> ExcluirHoleriteAsync(int id)
+        {
+            var holerite = await _context.Holerites.FindAsync(id);
+            if (holerite == null)
+                return false;
+            _context.Holerites.Remove(holerite);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> AtualizarHoleriteAsync(Holerite holerite)
+        {
+            var existingHolerite = await _context.Holerites.FindAsync(holerite.Id);
+            if (existingHolerite == null)
+                return false;
+
+
+            existingHolerite.NomeFuncionarioExtraido = holerite.NomeFuncionarioExtraido;
+            existingHolerite.DataUpload = holerite.DataUpload;
+            existingHolerite.MesReferencia = holerite.MesReferencia;
+            existingHolerite.AnoReferencia = holerite.AnoReferencia;
+            existingHolerite.TipoHolerite = holerite.TipoHolerite;
+            existingHolerite.ArquivoPdf = holerite.ArquivoPdf;
+            
+            _context.Holerites.Update(existingHolerite);
+            await _context.SaveChangesAsync();
+
+            return true;
+        }
+
+        public async Task<byte[]> LerArquivoAsync(IFormFile arquivoPdf)
+        {            
+            using (var stream = new MemoryStream())
+            {
+                await arquivoPdf.CopyToAsync(stream);
+                return stream.ToArray();
+            }
         }
     }
 }

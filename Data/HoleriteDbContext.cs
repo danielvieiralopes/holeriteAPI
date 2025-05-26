@@ -1,11 +1,13 @@
 
 
 
+using HoleriteApi.Models;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace HoleriteApi.Data
 {
-    public class HoleriteDbContext : DbContext
+    public class HoleriteDbContext : IdentityDbContext<ApplicationUser>
     {
         public HoleriteDbContext(DbContextOptions<HoleriteDbContext> options) : base(options) { }
         
@@ -23,5 +25,6 @@ namespace HoleriteApi.Data
         
         public DbSet<Funcionario> Funcionarios { get; set; }
         public DbSet<Holerite> Holerites { get; set; }
+
     }
 }

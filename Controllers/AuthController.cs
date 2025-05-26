@@ -1,53 +1,130 @@
+using HoleriteApi.Controllers.Requests;
+using HoleriteApi.Models;
+using HoleriteApi.Requests;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.Data;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using HoleriteApi.Controllers.Requests;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
+using LoginRequest = HoleriteApi.Controllers.Requests.LoginRequest;
+using RegisterRequest = HoleriteApi.Requests.RegisterRequest;
+using ForgotPasswordRequest = HoleriteApi.DTOs.Requests.EsqueciMinhaSenhaRequest;
+using ResetPasswordRequest = HoleriteApi.DTOs.Requests.RedefinirSenhaRequest;
+
+namespace HoleriteApi.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
 public class AuthController : ControllerBase
 {
-    private readonly IConfiguration _configuration;
+    private readonly UserManager<ApplicationUser> _userManager;
+    private readonly SignInManager<ApplicationUser> _signInManager;
+    private readonly IConfiguration _config;
 
-    public AuthController(IConfiguration configuration)
+    public AuthController(UserManager<ApplicationUser> userManager,
+                          SignInManager<ApplicationUser> signInManager,
+                          IConfiguration config)
     {
-        _configuration = configuration;
+        _userManager = userManager;
+        _signInManager = signInManager;
+        _config = config;
+    }
+
+    [HttpPost("register")]
+    public async Task<IActionResult> Register([FromBody] RegisterRequest request)
+    {
+        var user = new ApplicationUser { UserName = request.Cpf, Email = request.Email };
+        var result = await _userManager.CreateAsync(user, request.Senha);
+
+        if (!result.Succeeded) return BadRequest(result.Errors);
+
+        await _userManager.AddToRoleAsync(user, request.Role); // "Admin" ou "Funcionario"
+
+        return Ok("Usuário criado com sucesso.");
     }
 
     [HttpPost("login")]
-    public IActionResult Login([FromBody] LoginRequest request)
+    public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
-        // SIMULA um usuário fixo, como se estivesse no banco
-        if (request.Cpf == "12345678900" && request.Senha == "1234")
+        var user = await _userManager.FindByNameAsync(request.Cpf);
+        if (user == null) return Unauthorized("Usuário inválido.");
+
+        var result = await _signInManager.CheckPasswordSignInAsync(user, request.Senha, false);
+        if (!result.Succeeded) return Unauthorized("Senha inválida.");
+
+        var roles = await _userManager.GetRolesAsync(user);
+
+        var claims = new List<Claim>
         {
-            var token = GerarTokenJwt("12345678900", "admin");
-            return Ok(new { Token = token });
-        }
-
-        return Unauthorized("Usuário ou senha inválidos.");
-    }
-
-    private string GerarTokenJwt(string cpf, string role)
-    {
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
-        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-        var claims = new[]
-        {
-            new Claim(ClaimTypes.Name, cpf),
-            new Claim(ClaimTypes.Role, role)
+            new Claim(ClaimTypes.Name, user.UserName!),
+            new Claim(ClaimTypes.NameIdentifier, user.Id)
         };
 
-        var token = new JwtSecurityToken(
-            issuer: _configuration["Jwt:Issuer"],
-            audience: _configuration["Jwt:Audience"],
-            claims: claims,
-            expires: DateTime.Now.AddHours(2),
-            signingCredentials: creds
-        );
+        claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
 
-        return new JwtSecurityTokenHandler().WriteToken(token);
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var key = Encoding.UTF8.GetBytes(_config["Jwt:Key"]);
+
+        var tokenDescriptor = new SecurityTokenDescriptor
+        {
+            Subject = new ClaimsIdentity(claims),
+            Expires = DateTime.UtcNow.AddHours(2),
+            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),
+            Issuer = _config["Jwt:Issuer"],
+            Audience = _config["Jwt:Audience"]
+        };
+
+        var token = tokenHandler.CreateToken(tokenDescriptor);
+        return Ok(new { Token = tokenHandler.WriteToken(token) });
     }
+
+    [Authorize]
+    [HttpPost("change-password")]
+    public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request)
+    {
+        var cpfLogado = User.Identity?.Name;
+        if (cpfLogado == null || cpfLogado != request.Cpf)
+            return Unauthorized("Você não pode alterar a senha de outro usuário.");
+
+        var user = await _userManager.FindByNameAsync(cpfLogado);
+        if (user == null)
+            return NotFound("Usuário não encontrado.");
+
+        var result = await _userManager.ChangePasswordAsync(user, request.SenhaAtual, request.NovaSenha);
+        if (!result.Succeeded)
+            return BadRequest(result.Errors);
+
+        return Ok("Senha alterada com sucesso.");
+    }
+
+    [HttpPost("forgot-password")]
+    public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest request)
+    {
+        var user = await _userManager.FindByNameAsync(request.Cpf);
+        if (user == null)
+            return NotFound("Usuário não encontrado.");
+
+        var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+
+        // TODO: Enviar por e-mail. Por enquanto, retornamos o token.
+        return Ok(new { Token = token });
+    }
+
+    [HttpPost("reset-password")]
+    public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
+    {
+        var user = await _userManager.FindByNameAsync(request.Cpf);
+        if (user == null)
+            return NotFound("Usuário não encontrado.");
+
+        var result = await _userManager.ResetPasswordAsync(user, request.Token, request.NovaSenha);
+        if (!result.Succeeded)
+            return BadRequest(result.Errors);
+
+        return Ok("Senha redefinida com sucesso.");
+    }
+
 }
