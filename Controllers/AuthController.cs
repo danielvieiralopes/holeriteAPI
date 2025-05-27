@@ -148,12 +148,25 @@ public class AuthController : ControllerBase
         }
 
         var roles = await _userManager.GetRolesAsync(user);
+       
+        var role = roles.FirstOrDefault();
+
+       
+        ERoles tipoUsuario;
+        if (role == "Admin")
+        {
+            tipoUsuario = ERoles.Admin;
+        }
+        else
+        {
+            tipoUsuario = ERoles.Usuario; 
+        }
 
         var claims = new List<Claim>
-        {
-            new Claim(ClaimTypes.Name, user.UserName!),
-            new Claim(ClaimTypes.NameIdentifier, user.Id)
-        };
+    {
+        new Claim(ClaimTypes.Name, user.UserName!),
+        new Claim(ClaimTypes.NameIdentifier, user.Id)
+    };
 
         claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
 
@@ -166,17 +179,18 @@ public class AuthController : ControllerBase
             Expires = DateTime.UtcNow.AddHours(2),
             SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),
             Issuer = _config["Jwt:Issuer"],
-            Audience = _config["Jwt:Audience"]
+            Audience = _config["Jwt:Audience"],
+
         };
 
         var token = tokenHandler.CreateToken(tokenDescriptor);
 
         if (user.PrecisaTrocarSenha)
         {
-            return Ok(new { Token = tokenHandler.WriteToken(token) , precisaTrocarSenha = true, mensagem = "\"Usuário precisa trocar a senha antes de continuar.\"" });
+            return Ok(new { Token = tokenHandler.WriteToken(token), precisaTrocarSenha = true, tipoUsuario = tipoUsuario, mensagem = "\"Usuário precisa trocar a senha antes de continuar.\"" });
         }
 
-        return Ok(new { Token = tokenHandler.WriteToken(token) });
+        return Ok(new { Token = tokenHandler.WriteToken(token), tipoUsuario = tipoUsuario });
     }
 
     /// <summary>
