@@ -8,7 +8,7 @@ namespace HoleriteApi.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize(Roles = "Admin")] // Apenas Admin pode acessar
+[Authorize(Roles = "Admin")] 
 public class UsuariosController : ControllerBase
 {
     private readonly UserManager<ApplicationUser> _userManager;
@@ -23,8 +23,11 @@ public class UsuariosController : ControllerBase
     {
         var users = _userManager.Users.Select(u => new {
             u.Id,
+            u.NomeFuncionario,
             u.UserName,
-            u.Cpf
+            u.Cpf,
+            u.DataNascimento,
+            u.TipoUsuario
         }).ToList();
 
         return Ok(users);
@@ -38,9 +41,12 @@ public class UsuariosController : ControllerBase
 
         return Ok(new
         {
-            user.Id,            
+            user.Id,
+            user.NomeFuncionario,
             user.UserName,
-            user.Cpf           
+            user.Cpf,
+            user.DataNascimento,
+            user.TipoUsuario
         });
     }
 
@@ -52,7 +58,9 @@ public class UsuariosController : ControllerBase
 
         // Atualiza campos
         user.UserName = updated.UserName;
+        user.NomeFuncionario = updated.NomeFuncionario;
         user.Cpf = updated.Cpf;
+        user.DataNascimento = updated.DataNascimento;
         user.TipoUsuario = updated.TipoUsuario;
 
         var result = await _userManager.UpdateAsync(user);
@@ -61,30 +69,16 @@ public class UsuariosController : ControllerBase
         return Ok("Usuário atualizado com sucesso.");
     }
 
-    [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteUser(string id)
+
+    [HttpPut("desativar/{id}")]
+    public async Task<IActionResult> DesativarUsuario (string id)
     {
         var user = await _userManager.FindByIdAsync(id);
         if (user == null) return NotFound();
-
-        var result = await _userManager.DeleteAsync(user);
+        user.UsuarioAtivo = false; 
+        var result = await _userManager.UpdateAsync(user);
         if (!result.Succeeded) return BadRequest(result.Errors);
-
-        return Ok("Usuário excluído com sucesso.");
+        return Ok("Usuário desativado com sucesso.");
     }
 
-    [HttpPost("{id}/role")]
-    public async Task<IActionResult> ChangeRole(string id, [FromBody] ERoles newRole)
-    {
-        var user = await _userManager.FindByIdAsync(id);
-        if (user == null) return NotFound();
-
-        var currentRoles = await _userManager.GetRolesAsync(user);
-        await _userManager.RemoveFromRolesAsync(user, currentRoles);
-
-        var result = await _userManager.AddToRoleAsync(user, newRole.ToString());
-        if (!result.Succeeded) return BadRequest(result.Errors);
-
-        return Ok("Role alterada com sucesso.");
-    }
 }

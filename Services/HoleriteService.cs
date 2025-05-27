@@ -101,7 +101,7 @@ namespace HoleriteApi.Services
             var arquivoBytes = File.ReadAllBytes(caminhoSaida);
 
            
-            var funcionario = _context.Usuarios.FirstOrDefault(f => f.UserName == nomeFuncionario); 
+            var funcionario = _context.Usuarios.FirstOrDefault(f => f.NomeFuncionario == nomeFuncionario); 
            
             if (funcionario == null)
             {

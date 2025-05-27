@@ -13,6 +13,7 @@ using LoginRequest = HoleriteApi.Controllers.Requests.LoginRequest;
 using RegisterRequest = HoleriteApi.Requests.RegisterRequest;
 using ForgotPasswordRequest = HoleriteApi.DTOs.Requests.EsqueciMinhaSenhaRequest;
 using ResetPasswordRequest = HoleriteApi.DTOs.Requests.RedefinirSenhaRequest;
+using HoleriteApi.Models.Enum;
 
 namespace HoleriteApi.Controllers;
 
@@ -44,31 +45,70 @@ public class AuthController : ControllerBase
     /// POST /api/auth/register
     /// Content-Type: application/json
     /// {
+    ///   "nomeFuncionario": "João da Silva",
     ///   "cpf": "12345678900",
-    ///   "senha": "SenhaForte@123",
-    ///   "role": 1 // 1 para Admin, 2 para Funcionario
+    ///   "dataNascimento": "1990-01-01T00:00:00Z",
+    ///   "role": 1 // 1 para Admin, 2 para Funcionário
     /// }
-    /// 
-    /// Exemplo de response (sucesso):
-    /// "Usuário criado com sucesso."
-    /// 
-    /// Exemplo de response (erro):
-    /// [
-    ///   { "code": "DuplicateUserName", "description": "Username '12345678900' is already taken." }
-    /// ]
     /// </remarks>
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterRequest request)
     {
-        var user = new ApplicationUser { Cpf = request.Cpf, UserName = request.Cpf};
-        var result = await _userManager.CreateAsync(user, request.Senha);
+        // Normaliza o CPF (remove espaços e mantém apenas números)
+        var cpf = request.Cpf?.Trim();
+        if (string.IsNullOrWhiteSpace(cpf))
+            return BadRequest(new[] { new IdentityError { Code = "InvalidCpf", Description = "CPF é obrigatório." } });
 
-        if (!result.Succeeded) return BadRequest(result.Errors);
+        // Verifica se o CPF já está cadastrado como username
+        var existingUser = await _userManager.FindByNameAsync(cpf);
+        if (existingUser != null)
+        {
+            return BadRequest(new[] {
+            new IdentityError {
+                Code = "DuplicateUserName",
+                Description = $"Já existe um usuário com o CPF '{cpf}'."
+            }
+        });
+        }
 
-        await _userManager.AddToRoleAsync(user, request.Role.ToString());
+        // Extrai o primeiro nome para compor a senha
+        var primeiroNome = request.NomeFuncionario?
+            .Trim()
+            .Split(' ', StringSplitOptions.RemoveEmptyEntries)
+            .FirstOrDefault();
+
+        if (string.IsNullOrWhiteSpace(primeiroNome))
+            primeiroNome = "Usuario";
+        else
+            primeiroNome = char.ToUpper(primeiroNome[0]) + primeiroNome[1..].ToLower();
+
+        // Gera senha inicial com base na data de nascimento + primeiro nome
+        var senhaInicial = $"{request.DataNascimento:ddMMyyyy}@{primeiroNome}";
+
+        var user = new ApplicationUser
+        {
+            NomeFuncionario = request.NomeFuncionario?.Trim(),
+            Cpf = cpf,
+            UserName = cpf,
+            TipoUsuario = request.tipoUsuario,
+            DataNascimento = request.DataNascimento,
+            PrecisaTrocarSenha = true,
+        };
+
+        var createResult = await _userManager.CreateAsync(user, senhaInicial);
+        if (!createResult.Succeeded)
+            return BadRequest(createResult.Errors);
+
+        // Define a role (Admin ou Funcionário)
+        var role = Enum.GetName(typeof(ERoles), user.TipoUsuario);
+        if (string.IsNullOrEmpty(role))
+            return BadRequest(new[] { new IdentityError { Code = "InvalidRole", Description = "Role inválida." } });
+        await _userManager.AddToRoleAsync(user, role);
+
 
         return Ok("Usuário criado com sucesso.");
     }
+
 
     /// <summary>
     /// Realiza o login do usuário e retorna um token JWT.
@@ -102,6 +142,11 @@ public class AuthController : ControllerBase
         var result = await _signInManager.CheckPasswordSignInAsync(user, request.Senha, false);
         if (!result.Succeeded) return Unauthorized("Senha inválida.");
 
+        if (!user.UsuarioAtivo)
+        {
+            return BadRequest(new { mensagem = "Usuário inativo. Entre em contato com o administrador." });
+        }
+
         var roles = await _userManager.GetRolesAsync(user);
 
         var claims = new List<Claim>
@@ -125,6 +170,12 @@ public class AuthController : ControllerBase
         };
 
         var token = tokenHandler.CreateToken(tokenDescriptor);
+
+        if (user.PrecisaTrocarSenha)
+        {
+            return Ok(new { Token = tokenHandler.WriteToken(token) , precisaTrocarSenha = true, mensagem = "\"Usuário precisa trocar a senha antes de continuar.\"" });
+        }
+
         return Ok(new { Token = tokenHandler.WriteToken(token) });
     }
 
@@ -167,6 +218,12 @@ public class AuthController : ControllerBase
         var result = await _userManager.ChangePasswordAsync(user, request.SenhaAtual, request.NovaSenha);
         if (!result.Succeeded)
             return BadRequest(result.Errors);
+
+        user.PrecisaTrocarSenha = false; 
+        var updateResult = await _userManager.UpdateAsync(user);
+        if (!updateResult.Succeeded)
+            return BadRequest(updateResult.Errors);
+
 
         return Ok("Senha alterada com sucesso.");
     }
