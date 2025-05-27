@@ -58,7 +58,7 @@ namespace HoleriteApi.Migrations
 
                     b.HasIndex("UsuarioId");
 
-                    b.ToTable("Holerites");
+                    b.ToTable("Holerites", (string)null);
                 });
 
             modelBuilder.Entity("HoleriteApi.Models.ApplicationUser", b =>

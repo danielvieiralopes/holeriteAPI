@@ -21,14 +21,18 @@ public class UsuariosController : ControllerBase
     [HttpGet]
     public IActionResult GetAll()
     {
-        var users = _userManager.Users.Select(u => new {
-            u.Id,
-            u.NomeFuncionario,
-            u.UserName,
-            u.Cpf,
-            u.DataNascimento,
-            u.TipoUsuario
-        }).ToList();
+        var users = _userManager.Users
+            .Where(u => u.UsuarioAtivo) 
+            .Select(u => new
+            {
+                u.Id,
+                u.NomeFuncionario,
+                u.UserName,
+                u.Cpf,
+                u.DataNascimento,
+                u.TipoUsuario
+            })
+            .ToList();
 
         return Ok(users);
     }
@@ -66,19 +70,32 @@ public class UsuariosController : ControllerBase
         var result = await _userManager.UpdateAsync(user);
         if (!result.Succeeded) return BadRequest(result.Errors);
 
-        return Ok("Usuário atualizado com sucesso.");
+        return Ok(new { mensagem = "Usuário atualizado com sucesso." });
     }
 
 
-    [HttpPut("desativar/{id}")]
-    public async Task<IActionResult> DesativarUsuario (string id)
+    [HttpPatch("{id}")]
+    public async Task<IActionResult> DesativarUsuario(string id)
     {
         var user = await _userManager.FindByIdAsync(id);
-        if (user == null) return NotFound();
-        user.UsuarioAtivo = false; 
+        if (user == null)
+            return NotFound(new { message = "Usuário não encontrado." });
+
+        if (!user.UsuarioAtivo)
+            return Conflict(new { message = "Usuário já está desativado." });
+
+        user.UsuarioAtivo = false;
         var result = await _userManager.UpdateAsync(user);
-        if (!result.Succeeded) return BadRequest(result.Errors);
-        return Ok("Usuário desativado com sucesso.");
+
+        if (!result.Succeeded)
+        {
+            // Extrair mensagens de erro para retornar amigavelmente
+            var errors = result.Errors.Select(e => e.Description);
+            return BadRequest(new { errors });
+        }
+
+        return Ok(new { message = "Usuário desativado com sucesso." });
     }
+
 
 }

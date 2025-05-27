@@ -12,6 +12,6 @@ namespace HoleriteApi.Models
         public bool UsuarioAtivo { get; set; } = true;
         public ERoles TipoUsuario { get; set; }
 
-        public ICollection<Holerite> Holerites { get; set; }
+        public ICollection<Holerite>? Holerites { get; set; }
     }
 }
