@@ -1,7 +1,6 @@
 services:
   - type: web
     name: holerite-api
-    runtime: dotnet
     repo: https://github.com/danielvieiralopes/holeriteAPI
     branch: main
     buildCommand: dotnet publish Holerite.API/Holerite.API.csproj -c Release -o out
