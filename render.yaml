@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: holerite-api
+    runtime: dotnet
+    repo: https://github.com/danielvieiralopes/holeriteAPI
+    branch: main
+    buildCommand: dotnet publish Holerite.API/Holerite.API.csproj -c Release -o out
+    startCommand: dotnet out/Holerite.API.dll
+    buildFilter:
+      paths:
+        - Holerite.API/**
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
