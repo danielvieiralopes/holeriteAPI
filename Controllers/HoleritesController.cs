@@ -17,60 +17,6 @@ public class HoleritesController : ControllerBase
         _holeriteService = holeriteService;
     }
 
-
-    /// <summary>
-    /// Faz o upload de um holerite em formato PDF.
-    /// </summary>
-    /// <param name="request">Dados do upload do holerite.</param>
-    /// <returns>Retorna uma mensagem de sucesso ou erro.</returns>
-    /// <remarks>
-    /// Exemplo de request:
-    /// 
-    /// POST /api/holerites/upload
-    /// Content-Type: multipart/form-data
-    /// 
-    /// {
-    ///     "ArquivoPdf": "arquivo.pdf",
-    ///     "MesReferencia": 1,
-    ///     "AnoReferencia": 2023,
-    ///     "TipoHolerite": 0
-    /// }
-    /// 
-    /// Exemplo de retorno (sucesso):
-    /// 
-    /// {
-    ///     "message": "Holerite salvo."
-    /// }
-    /// 
-    /// Exemplo de retorno (erro):
-    /// 
-    /// {
-    ///     "message": "Arquivo PDF não enviado."
-    /// }
-    /// </remarks>
-    [Authorize(Roles = "Admin")]
-    [HttpPost("upload")]
-    [Consumes("multipart/form-data")]
-    public async Task<IActionResult> UploadHolerite([FromForm] UploadHoleriteRequest request)
-    {
-        try
-        {
-            if (request.ArquivoPdf == null || request.ArquivoPdf.Length == 0)
-                return BadRequest("Arquivo PDF não enviado.");
-            if (request.ArquivoPdf.ContentType != "application/pdf")
-                return BadRequest("Formato de arquivo inválido. Apenas PDF é aceito.");
-
-            var sucesso = await _holeriteService.SalvarHoleriteAsync(request);
-            return sucesso ? Ok("Holerite salvo.") : BadRequest("Falha no upload.");
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e.Message);
-            throw;
-        }
-    }
-
-
     /// <summary>
     /// Consulta holerites de um funcionário.
     /// </summary>
@@ -125,6 +71,102 @@ public class HoleritesController : ControllerBase
         }));
     }
     /// <summary>
+    /// Lista todos os holerites cadastrados.
+    /// </summary>
+    /// <returns>Retorna uma lista de holerites.</returns>
+    /// <remarks>
+    /// Exemplo de request:
+    /// 
+    /// GET /api/holerites
+    /// 
+    /// Exemplo de retorno:
+    /// [
+    ///   {
+    ///     "id": 1,
+    ///     "nomeFuncionarioExtraido": "João da Silva",
+    ///     "dataUpload": "2024-05-31T12:00:00",
+    ///     "mesReferencia": 5,
+    ///     "anoReferencia": 2024,
+    ///     "tipoHolerite": 1
+    ///   }
+    /// ]
+    /// </remarks>
+    [Authorize(Roles = "Admin")]
+    [HttpGet]
+    public async Task<IActionResult> ListarHolerites()
+    {
+        var holerites = await _holeriteService.ObterTodosHoleritesAsync();
+
+        var resultado = holerites.Select(h => new
+        {
+            h.Id,
+            h.NomeFuncionario,
+            h.Cpf,
+            h.DataUpload,
+            h.MesReferencia,
+            h.AnoReferencia,
+            h.TipoHolerite
+        });
+
+        return Ok(resultado);
+    }
+
+
+    /// <summary>
+    /// Faz o upload de um holerite em formato PDF.
+    /// </summary>
+    /// <param name="request">Dados do upload do holerite.</param>
+    /// <returns>Retorna uma mensagem de sucesso ou erro.</returns>
+    /// <remarks>
+    /// Exemplo de request:
+    /// 
+    /// POST /api/holerites/upload
+    /// Content-Type: multipart/form-data
+    /// 
+    /// {
+    ///     "ArquivoPdf": "arquivo.pdf",
+    ///     "MesReferencia": 1,
+    ///     "AnoReferencia": 2023,
+    ///     "TipoHolerite": 0
+    /// }
+    /// 
+    /// Exemplo de retorno (sucesso):
+    /// 
+    /// {
+    ///     "message": "Holerite salvo."
+    /// }
+    /// 
+    /// Exemplo de retorno (erro):
+    /// 
+    /// {
+    ///     "message": "Arquivo PDF não enviado."
+    /// }
+    /// </remarks>
+    [Authorize(Roles = "Admin")]
+    [HttpPost("upload")]
+    [Consumes("multipart/form-data")]
+    public async Task<IActionResult> UploadHolerite([FromForm] UploadHoleriteRequest request)
+    {
+        try
+        {
+            if (request.ArquivoPdf == null || request.ArquivoPdf.Length == 0)
+                return BadRequest("Arquivo PDF não enviado.");
+            if (request.ArquivoPdf.ContentType != "application/pdf")
+                return BadRequest("Formato de arquivo inválido. Apenas PDF é aceito.");
+
+            var sucesso = await _holeriteService.SalvarHoleriteAsync(request);
+            return sucesso ? Ok("Holerite salvo.") : BadRequest("Falha no upload.");
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e.Message);
+            throw;
+        }
+    }
+
+
+ 
+    /// <summary>
     /// Atualiza um holerite existente.
     /// </summary>
     /// <param name="id">ID do holerite a ser atualizado.</param>
@@ -165,11 +207,13 @@ public class HoleritesController : ControllerBase
         var atualizar = await _holeriteService.AtualizarHoleriteAsync(new Holerite
         {
             Id = id,
+            NomeFuncionarioExtraido = holerite.NomeFuncionarioExtraido,
+            DataUpload = DateTime.Now,
             ArquivoPdf = request.ArquivoPdf != null ? await _holeriteService.LerArquivoAsync(request.ArquivoPdf) : holerite.ArquivoPdf,
-            MesReferencia = request.MesReferencia,
             AnoReferencia = request.AnoReferencia,
+            MesReferencia = request.MesReferencia,
             TipoHolerite = request.TipoHolerite,
-            DataUpload = DateTime.Now
+            UsuarioId = holerite.UsuarioId
         });
 
         if (atualizar)

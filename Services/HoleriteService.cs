@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using iText.Kernel.Pdf;
 using iText.Kernel.Utils;
 using PdfPigUgly = UglyToad.PdfPig;
+using HoleriteApi.DTOs.Responses;
 
 namespace HoleriteApi.Services
 {
@@ -162,9 +163,24 @@ namespace HoleriteApi.Services
                 .ToList();
         }
 
-        public async Task<List<Holerite>> ObterTodosHoleritesAsync()
+        public async Task<List<HoleriteResponse>> ObterTodosHoleritesAsync()
         {
-            return await _context.Holerites.ToListAsync();
+
+             var holerites =  await _context.Holerites.ToListAsync();
+
+             var holeriteResponse = holerites.Select(h => new HoleriteResponse
+             {
+                 Id = h.Id,
+                 NomeFuncionario = _context.Usuarios.FirstOrDefault(u => u.Id == h.UsuarioId )?.NomeFuncionario ?? "Funcionario não encontrado",
+                 Cpf = _context.Usuarios.FirstOrDefault(u => u.Id == h.UsuarioId)?.Cpf ?? "CPF não encontrado",
+                 DataUpload = h.DataUpload,
+                 MesReferencia = h.MesReferencia,
+                 AnoReferencia = h.AnoReferencia,
+                 TipoHolerite = (int)h.TipoHolerite
+             }).ToList();
+
+            return holeriteResponse;
+
         }
 
         public async Task<Holerite?> ObterHoleritePorIdAsync(int id)
