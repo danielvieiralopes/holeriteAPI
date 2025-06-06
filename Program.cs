@@ -22,11 +22,12 @@ builder.Configuration
 var key = builder.Configuration["Jwt:Key"];
 var issuer = builder.Configuration["Jwt:Issuer"];
 var audience = builder.Configuration["Jwt:Audience"];
+var connString = Environment.GetEnvironmentVariable("MYSQL_CONN");
 
 // Configuração do EF Core com SQL Server
 builder.Services.AddDbContext<HoleriteDbContext>(options =>
-    options.UseMySql(builder.Configuration.GetConnectionString("DefaultConnection"),
-   ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("DefaultConnection")),
+    options.UseMySql(builder.Configuration.GetConnectionString(connString),
+   ServerVersion.AutoDetect(builder.Configuration.GetConnectionString(connString)),
     mySqlOptions => mySqlOptions.EnableRetryOnFailure()
 ));
 
