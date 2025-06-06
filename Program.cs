@@ -25,8 +25,10 @@ var audience = builder.Configuration["Jwt:Audience"];
 
 // Configuração do EF Core com SQL Server
 builder.Services.AddDbContext<HoleriteDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
-);
+    options.UseMySql(builder.Configuration.GetConnectionString("DefaultConnection"),
+   ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("DefaultConnection")),
+    mySqlOptions => mySqlOptions.EnableRetryOnFailure()
+));
 
 // Configuração do Identity
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
