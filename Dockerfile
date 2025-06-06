@@ -3,12 +3,12 @@ FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
 WORKDIR /app
 
 # Copia o csproj e restaura dependências
-COPY HoleriteApi/*.csproj ./HoleriteApi/
-RUN dotnet restore ./HoleriteApi/HoleriteApi.csproj
+COPY *.csproj ./
+RUN dotnet restore ./HoleriteApi.csproj
 
 # Copia tudo e compila
 COPY . .
-RUN dotnet publish ./HoleriteApi/HoleriteApi.csproj -c Release -o /out
+RUN dotnet publish -c Release -o /app/publish
 
 # Etapa 2 - Runtime
 FROM mcr.microsoft.com/dotnet/aspnet:7.0
