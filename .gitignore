@@ -4,5 +4,4 @@ PdfsSeparados/
 bin/
 obj/
 *.csproj.user
-*.csproj
 out/
