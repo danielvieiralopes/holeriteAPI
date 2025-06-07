@@ -108,11 +108,19 @@ builder.Services.AddControllers();
 var app = builder.Build();
 
 // Executa o seed das roles ao iniciar
-using (var scope = app.Services.CreateScope())
+try
 {
-    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-    await IdentitySeeder.SeedDefaultRolesAsync(roleManager);
+    using (var scope = app.Services.CreateScope())
+    {
+        var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+        IdentitySeeder.SeedDefaultRolesAsync(roleManager).GetAwaiter().GetResult();
+    }
 }
+catch (Exception ex)
+{
+    Console.WriteLine($"Erro ao fazer seed das roles: {ex.Message}");
+}
+
 
 // Ativa Swagger em ambiente de desenvolvimento
 if (app.Environment.IsDevelopment())
