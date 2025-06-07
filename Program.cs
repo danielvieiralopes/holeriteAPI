@@ -122,12 +122,10 @@ catch (Exception ex)
 }
 
 
-// Ativa Swagger em ambiente de desenvolvimento
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+
+app.UseSwagger();
+app.UseSwaggerUI();
+
 
 // Middlewares
 app.UseCors("AllowFrontend");
