@@ -22,14 +22,15 @@ builder.Configuration
 var key = builder.Configuration["Jwt:Key"];
 var issuer = builder.Configuration["Jwt:Issuer"];
 var audience = builder.Configuration["Jwt:Audience"];
-var connString = Environment.GetEnvironmentVariable("MYSQL_CONN");
+var connString = builder.Configuration.GetConnectionString("DefaultConnection")
+                 ?? Environment.GetEnvironmentVariable("POSTGRES_CONN");
 
-// Configuração do EF Core com SQL Server
+// Configuração do EF Core com PG
 builder.Services.AddDbContext<HoleriteDbContext>(options =>
-    options.UseMySql(builder.Configuration.GetConnectionString(connString),
-   ServerVersion.AutoDetect(builder.Configuration.GetConnectionString(connString)),
-    mySqlOptions => mySqlOptions.EnableRetryOnFailure()
-));
+    options.UseNpgsql(connString, npgsqlOptions =>
+        npgsqlOptions.EnableRetryOnFailure()
+    )
+);
 
 // Configuração do Identity
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
