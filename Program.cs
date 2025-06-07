@@ -65,7 +65,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend",
         policy => policy
-            .WithOrigins("http://localhost:4200")
+            .WithOrigins("https://holerite-app-41gu.onrender.com", "http://localhost:4200")
             .AllowAnyHeader()
             .AllowAnyMethod()
     );
