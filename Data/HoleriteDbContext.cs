@@ -45,6 +45,35 @@ namespace HoleriteApi.Data
                 .HasMaxLength(255);
         }
 
+        public override int SaveChanges()
+        {
+            SetUtcDateTimes();
+            return base.SaveChanges();
+        }
+
+        public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+        {
+            SetUtcDateTimes();
+            return base.SaveChangesAsync(cancellationToken);
+        }
+
+        private void SetUtcDateTimes()
+        {
+            var entries = ChangeTracker.Entries()
+                .Where(e => e.State == EntityState.Added || e.State == EntityState.Modified);
+
+            foreach (var entry in entries)
+            {
+                foreach (var property in entry.Properties)
+                {
+                    if (property.Metadata.ClrType == typeof(DateTime) && property.CurrentValue is DateTime dt)
+                    {
+                        property.CurrentValue = DateTime.SpecifyKind(dt, DateTimeKind.Utc);
+                    }
+                }
+            }
+        }
+
 
         public DbSet<ApplicationUser> Usuarios { get; set; }
         public DbSet<Holerite> Holerites { get; set; }
