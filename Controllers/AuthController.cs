@@ -91,7 +91,7 @@ public class AuthController : ControllerBase
             Cpf = cpf,
             UserName = cpf,
             TipoUsuario = request.tipoUsuario,
-            DataNascimento = request.DataNascimento,
+            DataNascimento = DateTime.SpecifyKind(request.DataNascimento, DateTimeKind.Utc),
             PrecisaTrocarSenha = true,
         };
 

@@ -118,16 +118,16 @@ namespace HoleriteApi.Services
                 continue;
             }
 
-            var holerite = new Holerite
-            {
-                UsuarioId = funcionario.Id,
-                NomeFuncionarioExtraido = nomeArquivo,
-                MesReferencia = mesReferencia,
-                AnoReferencia = anoReferencia,
-                TipoHolerite = tipoHolerite,
-                DataUpload = DateTime.Now,
-                ArquivoPdf = arquivoBytes
-            };
+                var holerite = new Holerite
+                {
+                    UsuarioId = funcionario.Id,
+                    NomeFuncionarioExtraido = nomeArquivo,
+                    MesReferencia = mesReferencia,
+                    AnoReferencia = anoReferencia,
+                    TipoHolerite = tipoHolerite,
+                    DataUpload = DateTime.UtcNow, 
+                    ArquivoPdf = arquivoBytes
+                };
             
             _context.Holerites.Add(holerite);
             _context.SaveChanges();
@@ -207,7 +207,9 @@ namespace HoleriteApi.Services
 
 
             existingHolerite.NomeFuncionarioExtraido = holerite.NomeFuncionarioExtraido;
-            existingHolerite.DataUpload = holerite.DataUpload;
+            existingHolerite.DataUpload = holerite.DataUpload.Kind == DateTimeKind.Utc
+                ? holerite.DataUpload
+                : DateTime.SpecifyKind(holerite.DataUpload, DateTimeKind.Utc);
             existingHolerite.MesReferencia = holerite.MesReferencia;
             existingHolerite.AnoReferencia = holerite.AnoReferencia;
             existingHolerite.TipoHolerite = holerite.TipoHolerite;
